@@ -3,8 +3,8 @@
  * File name: connect.cpp
  * Description: this file implements the connection dialog window
  *
- * @author Mathieu Grzybek on 20??-??-??
- * @copyright 20?? Mathieu Grzybek. All rights reserved.
+ * @author Mathieu Grzybek on 2012-05-08
+ * @copyright 2012 Mathieu Grzybek. All rights reserved.
  * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
  *
  * @see The GNU Public License (GPL) version 3 or higher
