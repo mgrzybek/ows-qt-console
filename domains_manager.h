@@ -1,0 +1,62 @@
+/**
+ * Project: OWS GUI
+ * File name: domains_manager.h
+ * Description: this header describes the connections management dialog window
+ *
+ * @author Mathieu Grzybek on 2012-04-30
+ * @copyright 2012 Mathieu Grzybek. All rights reserved.
+ * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
+ *
+ * @see The GNU Public License (GPL) version 3 or higher
+ *
+ *
+ * OWS GUI is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
+#ifndef DOMAINS_MANAGER_H
+#define DOMAINS_MANAGER_H
+
+#include <iostream>
+
+#include <QtDebug>
+#include <QStringList>
+#include <QDialog>
+#include <QSettings>
+#include <QStandardItemModel>
+
+namespace Ui {
+	class Domains_Manager;
+}
+
+class Domains_Manager : public QDialog
+{
+	Q_OBJECT
+
+public:
+	explicit Domains_Manager(QStandardItemModel* model, QDialog* parent = 0);
+	~Domains_Manager();
+
+	void add_blank_server();
+
+private slots:
+	void on_New_Server_Button_clicked();
+	void on_Delete_Server_Button_clicked();
+
+private:
+	Ui::Domains_Manager *ui;
+	QStandardItemModel* servers_model;
+};
+
+#endif // DOMAINS_MANAGER_H
