@@ -44,6 +44,7 @@ INCLUDEPATH += 	/opt/local/include \
 
 SOURCES += main.cpp\
 	main_window.cpp \
+	connect.cpp \
 	domains_manager.cpp \
 	../../open-workload-scheduler/src/gen-cpp/ows_rpc.cpp \
 	../../open-workload-scheduler/src/gen-cpp/model_types.cpp \
@@ -51,9 +52,9 @@ SOURCES += main.cpp\
 	../../open-workload-scheduler/src/rpc_client.cpp \
 #	../../open-workload-scheduler/src/config.cpp \
 #	../../open-workload-scheduler/src/router.cpp
-	connect.cpp
 
 HEADERS  += main_window.h \
+	connect.h \
 	domains_manager.h \
 	../../open-workload-scheduler/src/gen-cpp/ows_rpc.h \
 	../../open-workload-scheduler/src/gen-cpp/model_types.h \
@@ -61,7 +62,6 @@ HEADERS  += main_window.h \
 	../../open-workload-scheduler/src/rpc_client.h \
 #	../../open-workload-scheduler/src/config.h \
 #	../../open-workload-scheduler/src/router.h
-	connect.h
 
 FORMS    += main_window.ui \
 	domains_manager.ui \
