@@ -3,6 +3,6 @@ Makefile
 *.user
 *.o
 moc*
-ui_*.h
-ui_*.cpp
+ui_*
+ui_*
 ows-qt-console.app

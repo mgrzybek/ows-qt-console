@@ -24,9 +24,9 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 
-QT	+= core gui
+QT		+= core gui
 
-TARGET	= ows-qt-console
+TARGET		= ows-qt-console
 TEMPLATE	= app
 
 unix:LIBS += -lthrift \
