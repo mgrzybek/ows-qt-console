@@ -1,13 +1,33 @@
-#-------------------------------------------------
+# Project: ows-qt-console
+# File name: ows-qt-console.pro
+# Description: describes the project and how to build it
 #
-# Project created by QtCreator 2012-04-20T22:00:17
+# @author Mathieu Grzybek on 20??-??-??
+# @copyright 20?? Mathieu Grzybek. All rights reserved.
+# @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
 #
-#-------------------------------------------------
+# @see The GNU Public License (GPL) version 3 or higher
+#
+#
+# ? is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#
 
-QT       += core gui
+QT	+= core gui
 
-TARGET = ows-gui
-TEMPLATE = app
+TARGET	= ows-qt-console
+TEMPLATE	= app
 
 unix:LIBS += -lthrift \
 	-L/opt/local/lib \
@@ -40,29 +60,25 @@ INCLUDEPATH += 	/opt/local/include \
 	/opt/local/include/mysql5 \
 	/opt/local/include/mysql5/mysql \
 	/opt/local/include/thrift \
-	../../open-workload-scheduler/src
+	../open-workload-scheduler/src
 
-SOURCES += main.cpp\
-	main_window.cpp \
-	connect.cpp \
-	domains_manager.cpp \
-	../../open-workload-scheduler/src/gen-cpp/ows_rpc.cpp \
-	../../open-workload-scheduler/src/gen-cpp/model_types.cpp \
-	../../open-workload-scheduler/src/gen-cpp/model_constants.cpp \
-	../../open-workload-scheduler/src/rpc_client.cpp \
-#	../../open-workload-scheduler/src/config.cpp \
-#	../../open-workload-scheduler/src/router.cpp
+SOURCES += src/main.cpp\
+	src/main_window.cpp \
+	src/connect.cpp \
+	src/domains_manager.cpp \
+	../open-workload-scheduler/src/gen-cpp/ows_rpc.cpp \
+	../open-workload-scheduler/src/gen-cpp/model_types.cpp \
+	../open-workload-scheduler/src/gen-cpp/model_constants.cpp \
+	../open-workload-scheduler/src/rpc_client.cpp \
 
-HEADERS  += main_window.h \
-	connect.h \
-	domains_manager.h \
-	../../open-workload-scheduler/src/gen-cpp/ows_rpc.h \
-	../../open-workload-scheduler/src/gen-cpp/model_types.h \
-	../../open-workload-scheduler/src/gen-cpp/model_constants.h \
-	../../open-workload-scheduler/src/rpc_client.h \
-#	../../open-workload-scheduler/src/config.h \
-#	../../open-workload-scheduler/src/router.h
+HEADERS  += src/main_window.h \
+	src/connect.h \
+	src/domains_manager.h \
+	../open-workload-scheduler/src/gen-cpp/ows_rpc.h \
+	../open-workload-scheduler/src/gen-cpp/model_types.h \
+	../open-workload-scheduler/src/gen-cpp/model_constants.h \
+	../open-workload-scheduler/src/rpc_client.h \
 
-FORMS    += main_window.ui \
-	domains_manager.ui \
-	connect.ui
+FORMS    += ui/main_window.ui \
+	ui/domains_manager.ui \
+	ui/connect.ui

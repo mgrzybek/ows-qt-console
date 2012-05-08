@@ -1,6 +1,6 @@
 /**
- * Project: OWS GUI
- * File name: domains_manager.cpp
+ * Project: ows-qt-console
+ * File name: domains_manager.h
  * Description: this header describes the connections management dialog window
  *
  * @author Mathieu Grzybek on 2012-04-30
@@ -25,46 +25,36 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "domains_manager.h"
-#include "ui_domains_manager.h"
+#ifndef DOMAINS_MANAGER_H
+#define DOMAINS_MANAGER_H
 
-Domains_Manager::Domains_Manager(QStandardItemModel* model, QDialog* parent) :
-	QDialog(parent),
-	ui(new Ui::Domains_Manager)
+#include <QtDebug>
+#include <QStringList>
+#include <QDialog>
+#include <QSettings>
+#include <QStandardItemModel>
+
+namespace Ui {
+	class Domains_Manager;
+}
+
+class Domains_Manager : public QDialog
 {
-	servers_model = model;
-	ui->setupUi(this);
-	ui->Saved_Servers_List->setModel(model);
-	ui->Saved_Servers_List->show();
-}
+	Q_OBJECT
 
-Domains_Manager::~Domains_Manager()
-{
-	delete ui;
-	servers_model = NULL;
-}
+public:
+	explicit Domains_Manager(QStandardItemModel* model, QDialog* parent = 0);
+	~Domains_Manager();
 
-void Domains_Manager::add_blank_server() {
-	QStandardItem new_item;
+	void add_blank_server();
 
-	new_item.appendRow(new QStandardItem(""));
-	new_item.appendRow(new QStandardItem(""));
-	new_item.appendRow(new QStandardItem(""));
-	new_item.appendRow(new QStandardItem(""));
+private slots:
+	void on_New_Server_Button_clicked();
+	void on_Delete_Server_Button_clicked();
 
-	servers_model->appendRow(&new_item);
-}
+private:
+	Ui::Domains_Manager *ui;
+	QStandardItemModel* servers_model;
+};
 
-void Domains_Manager::on_New_Server_Button_clicked()
-{
-	add_blank_server();
-}
-
-void Domains_Manager::on_Delete_Server_Button_clicked()
-{
-	QModelIndexList selected_items = ui->Saved_Servers_List->selectionModel()->selectedIndexes();
-
-	Q_FOREACH(QModelIndex index, selected_items) {
-		servers_model->removeRow(index.row());
-	}
-}
+#endif // DOMAINS_MANAGER_H

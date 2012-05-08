@@ -1,5 +1,5 @@
 /**
- * Project: OWS GUI
+ * Project: ows-qt-console
  * File name: main_window.h
  * Description: this header describes the program's main window
  *
@@ -28,7 +28,6 @@
 #ifndef MAIN_WINDOW_H
 #define MAIN_WINDOW_H
 
-#include <iostream>
 #include <QMainWindow>
 #include <QSettings>
 #include <QErrorMessage>

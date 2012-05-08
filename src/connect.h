@@ -1,7 +1,7 @@
 /**
- * Project:
- * File name:
- * Description:
+ * Project: ows-qt-console
+ * File name: connect.h
+ * Description: describes the connection dialog window
  *
  * @author Mathieu Grzybek on 20??-??-??
  * @copyright 20?? Mathieu Grzybek. All rights reserved.
@@ -25,41 +25,40 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "connect.h"
-#include "ui_connect.h"
+#ifndef CONNECT_H
+#define CONNECT_H
 
-Connect::Connect(int* row, QStandardItemModel* model, QWidget* parent) :
-	QDialog(parent),
-	ui(new Ui::Connect)
-{
-	selected_row = row;
-	servers_model = model;
+#include <QDebug>
+#include <QDialog>
+#include <QStandardItemModel>
 
-	ui->setupUi(this);
+#include "Main_Window.h"
 
-	ui->Servers_List->setModel(model);
-	ui->Servers_List->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	ui->Servers_List->setSelectionBehavior(QAbstractItemView::SelectItems);
+namespace Ui {
+	class Connect;
 }
 
-Connect::~Connect()
-{
-	delete ui;
-}
+class Main_Window;
 
-void Connect::changeEvent(QEvent *e)
+class Connect : public QDialog
 {
-	QDialog::changeEvent(e);
-	switch (e->type()) {
-		case QEvent::LanguageChange:
-			ui->retranslateUi(this);
-			break;
-		default:
-			break;
-	}
-}
+	Q_OBJECT
 
-void Connect::on_Servers_List_clicked(const QModelIndex &index)
-{
-	*selected_row = index.row();
-}
+public:
+	explicit Connect(int* row, QStandardItemModel* model, QWidget *parent = 0);
+	~Connect();
+
+protected:
+	void changeEvent(QEvent *e);
+
+private slots:
+	void on_Servers_List_clicked(const QModelIndex &index);
+
+private:
+	Ui::Connect *ui;
+	QModelIndex* clicked_item;
+	QStandardItemModel* servers_model;
+	int* selected_row;
+};
+
+#endif // CONNECT_H

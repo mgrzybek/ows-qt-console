@@ -1,5 +1,5 @@
 /**
- * Project: OWS GUI
+ * Project: ows-qt-console
  * File name: main_window.cpp
  * Description: this source file describes the program's main window
  *

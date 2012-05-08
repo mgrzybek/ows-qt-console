@@ -1,1 +1,8 @@
+Makefile
+.DS_Store
 *.user
+*.o
+moc*
+ui_*.h
+ui_*.cpp
+ows-qt-console.app
