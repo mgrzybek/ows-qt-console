@@ -75,7 +75,7 @@ SOURCES += src/main.cpp\
 HEADERS  += src/main_window.h \
 	src/connect.h \
 	src/domains_manager.h \
-   	 src/edit_node_dialog.h
+   	src/edit_node_dialog.h
 	../open-workload-scheduler/src/gen-cpp/ows_rpc.h \
 	../open-workload-scheduler/src/gen-cpp/model_types.h \
 	../open-workload-scheduler/src/gen-cpp/model_constants.h \
