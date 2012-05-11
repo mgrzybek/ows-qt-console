@@ -34,7 +34,7 @@
 
 #include "connect.h"
 #include "domains_manager.h"
-#include "ui_domains_manager.h"
+#include "edit_node_dialog.h"
 
 #include "rpc_client.h"
 
@@ -54,6 +54,7 @@ public:
 
 	QStandardItemModel	servers_model;
 	QStandardItemModel	jobs_model;
+	QStandardItemModel	nodes_tree_model;
 
 	bool	rpc_connect(const QString& hostname, const int& port, const QString& username, const QString& password);
 
@@ -62,6 +63,8 @@ private slots:
 
 	void	on_actionConnect_triggered();
 	void	on_actionDisconnect_triggered();
+
+	void on_add_node_button_clicked();
 
 private:
 	/*

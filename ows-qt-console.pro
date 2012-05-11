@@ -70,6 +70,7 @@ SOURCES += src/main.cpp\
 	../open-workload-scheduler/src/gen-cpp/model_types.cpp \
 	../open-workload-scheduler/src/gen-cpp/model_constants.cpp \
 	../open-workload-scheduler/src/rpc_client.cpp \
+    src/edit_node_dialog.cpp
 
 HEADERS  += src/main_window.h \
 	src/connect.h \
@@ -78,7 +79,9 @@ HEADERS  += src/main_window.h \
 	../open-workload-scheduler/src/gen-cpp/model_types.h \
 	../open-workload-scheduler/src/gen-cpp/model_constants.h \
 	../open-workload-scheduler/src/rpc_client.h \
+    src/edit_node_dialog.h
 
 FORMS    += ui/main_window.ui \
 	ui/domains_manager.ui \
-	ui/connect.ui
+	ui/connect.ui \
+    ui/edit_node_dialog.ui

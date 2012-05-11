@@ -32,7 +32,12 @@ Main_Window::Main_Window(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::Main_Window)
 {
+	QStringList	headers;
+
 	load_settings();
+
+	headers << "Domain Name" << "Hostname" << "Port" << "Username" << "Password";
+	servers_model.setHorizontalHeaderLabels(headers);
 
 	ui->setupUi(this);
 	ui->centralWidget->setVisible(false);
@@ -124,17 +129,37 @@ void Main_Window::on_actionDisconnect_triggered() {
 	ui->centralWidget->setVisible(false);
 }
 
+void Main_Window::on_add_node_button_clicked()
+{
+	rpc::t_node	node;
+	Edit_Node_Dialog*	add_node = new Edit_Node_Dialog(&node, local_node.domain_name.c_str());
+	QErrorMessage*	error_msg;
+
+	if ( add_node->exec() == QDialog::Rejected )
+		return;
+
+	try {
+		rpc_client->get_handler()->add_node(local_node.domain_name, local_node, remote_node, node);
+	} catch ( std::exception& e ) {
+		qCritical() << "Cannot get the resul from the RPC call : " << e.what();
+
+		error_msg = new QErrorMessage();
+		error_msg->showMessage(e.what());
+		error_msg->exec();
+		delete error_msg;
+	}
+
+	if ( ui->auto_refresh_check->isChecked() == true )
+		populate_domain_model();
+}
+
 void Main_Window::load_settings()
 {
 	QSettings	settings;
-	QStringList	headers;
 	int		size;
 	QList<QStandardItem*>	row;
 
-	headers << "Domain Name" << "Hostname" << "Port" << "Username" << "Password";
-
 	servers_model.clear();
-	servers_model.setHorizontalHeaderLabels(headers);
 
 	settings.beginGroup("domains_manager");
 	size = settings.beginReadArray("servers");
@@ -202,33 +227,16 @@ bool Main_Window::populate_domain_model() {
 	QErrorMessage*	error_msg;
 
 	QStringList	headers;
-	QList<QStandardItem*>	row;
+	QList<QStandardItem*>	jobs_row;
+	QList<QStandardItem*>	nodes_row;
 
 	try {
 		rpc_client->get_handler()->get_nodes(result_nodes, local_node.domain_name, local_node, remote_node);
-	} catch ( rpc::ex_routing r) {
-		qCritical() << "Cannot send the RPC call to the right server : " << r.msg.c_str();
+	} catch ( std::exception& e ) {
+		qCritical() << "Cannot get the result from the RPC call : " << e.what();
 
 		error_msg = new QErrorMessage();
-		error_msg->showMessage(r.msg.c_str());
-		error_msg->exec();
-		delete error_msg;
-
-		return false;
-	} catch ( rpc::ex_node n ) {
-		qCritical() << "Cannot get the resul from the RPC call : " << n.msg.c_str();
-
-		error_msg = new QErrorMessage();
-		error_msg->showMessage(n.msg.c_str());
-		error_msg->exec();
-		delete error_msg;
-
-		return false;
-	} catch ( rpc::ex_processing p ) {
-		qCritical() << "Cannot get the resul from the RPC call : " << p.msg.c_str();
-
-		error_msg = new QErrorMessage();
-		error_msg->showMessage(p.msg.c_str());
+		error_msg->showMessage(e.what());
 		error_msg->exec();
 		delete error_msg;
 
@@ -239,23 +247,31 @@ bool Main_Window::populate_domain_model() {
 
 	jobs_model.clear();
 	jobs_model.setHorizontalHeaderLabels(headers);
-	row.clear();
+	jobs_row.clear();
+	nodes_row.clear();
+
+	qDebug() << "Number of nodes: " << result_nodes.size();
 
 	Q_FOREACH(rpc::t_node n, result_nodes) {
 		Q_FOREACH(rpc::t_job j, n.jobs) {
-			row << new QStandardItem(j.node_name.c_str());
-			row << new QStandardItem(j.name.c_str());
-			row << new QStandardItem(j.cmd_line.c_str());
-			row << new QStandardItem(j.state);
-			row << new QStandardItem(j.start_time);
-			row << new QStandardItem(j.stop_time);
+			jobs_row << new QStandardItem(j.node_name.c_str());
+			jobs_row << new QStandardItem(j.name.c_str());
+			jobs_row << new QStandardItem(j.cmd_line.c_str());
+			jobs_row << new QStandardItem(j.state);
+			jobs_row << new QStandardItem(j.start_time);
+			jobs_row << new QStandardItem(j.stop_time);
 
-			jobs_model.appendRow(row);
-			row.clear();
+			jobs_model.appendRow(jobs_row);
+			jobs_row.clear();
 		}
+
+		nodes_row << new QStandardItem(n.name.c_str());
+		nodes_tree_model.appendRow(nodes_row);
+		nodes_row.clear();
 	}
 
 	ui->jobs_view->setModel(&jobs_model);
+	ui->nodes_tree->setModel(&nodes_tree_model);
 
 	return true;
 }
