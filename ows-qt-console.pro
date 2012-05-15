@@ -66,22 +66,22 @@ SOURCES += src/main.cpp\
 	src/main_window.cpp \
 	src/connect.cpp \
 	src/domains_manager.cpp \
-	src/edit_node_dialog.cpp
+	src/edit_node_dialog.cpp \
 	../open-workload-scheduler/src/gen-cpp/ows_rpc.cpp \
 	../open-workload-scheduler/src/gen-cpp/model_types.cpp \
 	../open-workload-scheduler/src/gen-cpp/model_constants.cpp \
-	../open-workload-scheduler/src/rpc_client.cpp \
+	../open-workload-scheduler/src/rpc_client.cpp
 
 HEADERS  += src/main_window.h \
 	src/connect.h \
 	src/domains_manager.h \
-   	src/edit_node_dialog.h
+	src/edit_node_dialog.h \
 	../open-workload-scheduler/src/gen-cpp/ows_rpc.h \
 	../open-workload-scheduler/src/gen-cpp/model_types.h \
 	../open-workload-scheduler/src/gen-cpp/model_constants.h \
-	../open-workload-scheduler/src/rpc_client.h \
+	../open-workload-scheduler/src/rpc_client.h
 
 FORMS    += ui/main_window.ui \
 	ui/domains_manager.ui \
 	ui/connect.ui \
-    	ui/edit_node_dialog.ui
+	ui/edit_node_dialog.ui
