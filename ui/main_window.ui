@@ -53,13 +53,20 @@
      <widget class="QWidget" name="horizontalLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>590</x>
+        <x>372</x>
         <y>510</y>
-        <width>271</width>
+        <width>471</width>
         <height>80</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="get_nodes_button">
+         <property name="text">
+          <string>Refresh</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QPushButton" name="add_node_button">
          <property name="text">

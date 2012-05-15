@@ -64,7 +64,8 @@ private slots:
 	void	on_actionConnect_triggered();
 	void	on_actionDisconnect_triggered();
 
-	void on_add_node_button_clicked();
+	void	on_add_node_button_clicked();
+	void	on_get_nodes_button_clicked();
 
 private:
 	/*

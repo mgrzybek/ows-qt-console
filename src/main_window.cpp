@@ -41,6 +41,7 @@ Main_Window::Main_Window(QWidget *parent) :
 
 	ui->setupUi(this);
 	ui->centralWidget->setVisible(false);
+	ui->actionDisconnect->setDisabled(true);
 }
 
 Main_Window::~Main_Window()
@@ -140,7 +141,7 @@ void Main_Window::on_add_node_button_clicked()
 
 	try {
 		rpc_client->get_handler()->add_node(local_node.domain_name, local_node, remote_node, node);
-	} catch ( std::exception& e ) {
+	} catch ( const std::exception& e ) {
 		qCritical() << "Cannot get the resul from the RPC call : " << e.what();
 
 		error_msg = new QErrorMessage();
@@ -232,7 +233,7 @@ bool Main_Window::populate_domain_model() {
 
 	try {
 		rpc_client->get_handler()->get_nodes(result_nodes, local_node.domain_name, local_node, remote_node);
-	} catch ( std::exception& e ) {
+	} catch ( const std::exception& e ) {
 		qCritical() << "Cannot get the result from the RPC call : " << e.what();
 
 		error_msg = new QErrorMessage();
@@ -274,4 +275,9 @@ bool Main_Window::populate_domain_model() {
 	ui->nodes_tree->setModel(&nodes_tree_model);
 
 	return true;
+}
+
+void Main_Window::on_get_nodes_button_clicked()
+{
+	populate_domain_model();
 }
