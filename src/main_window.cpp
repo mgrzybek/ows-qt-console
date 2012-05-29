@@ -111,6 +111,7 @@ void Main_Window::on_actionConnect_triggered()
 		if ( rpc_client->open(hostname.toStdString().c_str(), port) == true ) {
 			if ( populate_domain_model() == true ) {
 				ui->actionConnect->setDisabled(true);
+				ui->actionDisconnect->setEnabled(true);
 				ui->centralWidget->setVisible(true);
 			}
 		} else {
@@ -128,6 +129,7 @@ void Main_Window::on_actionDisconnect_triggered() {
 	rpc_client->close();
 	delete rpc_client;
 	ui->centralWidget->setVisible(false);
+	ui->actionConnect->setVisible(true);
 }
 
 void Main_Window::on_add_node_button_clicked()
@@ -136,8 +138,10 @@ void Main_Window::on_add_node_button_clicked()
 	Edit_Node_Dialog*	add_node = new Edit_Node_Dialog(&node, local_node.domain_name.c_str());
 	QErrorMessage*	error_msg;
 
-	if ( add_node->exec() == QDialog::Rejected )
+	if ( add_node->exec() == QDialog::Rejected ) {
+		delete add_node;
 		return;
+	}
 
 	try {
 		rpc_client->get_handler()->add_node(local_node.domain_name, local_node, remote_node, node);
@@ -149,6 +153,8 @@ void Main_Window::on_add_node_button_clicked()
 		error_msg->exec();
 		delete error_msg;
 	}
+
+	delete add_node;
 
 	if ( ui->auto_refresh_check->isChecked() == true )
 		populate_domain_model();
