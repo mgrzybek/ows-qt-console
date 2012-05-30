@@ -110,7 +110,7 @@ void Main_Window::on_actionConnect_triggered()
 
 		if ( rpc_client->open(hostname.toStdString().c_str(), port) == true ) {
 			if ( populate_domain_model() == true ) {
-				ui->actionConnect->setDisabled(true);
+				ui->actionConnect->setEnabled(false);
 				ui->actionDisconnect->setEnabled(true);
 				ui->centralWidget->setVisible(true);
 			}
@@ -128,8 +128,10 @@ void Main_Window::on_actionConnect_triggered()
 void Main_Window::on_actionDisconnect_triggered() {
 	rpc_client->close();
 	delete rpc_client;
+
 	ui->centralWidget->setVisible(false);
-	ui->actionConnect->setVisible(true);
+	ui->actionConnect->setEnabled(true);
+	ui->actionDisconnect->setEnabled(false);
 }
 
 void Main_Window::on_add_node_button_clicked()
@@ -239,9 +241,19 @@ bool Main_Window::populate_domain_model() {
 
 	try {
 		rpc_client->get_handler()->get_nodes(result_nodes, local_node.domain_name, local_node, remote_node);
-	} catch ( const std::exception& e ) {
+	} catch ( const apache::thrift::transport::TTransportException& e ) {
 		qCritical() << "Cannot get the result from the RPC call : " << e.what();
 
+		error_msg = new QErrorMessage();
+		error_msg->showMessage(e.what());
+		error_msg->exec();
+		delete error_msg;
+
+		on_actionDisconnect_triggered();
+
+		return false;
+	} catch ( const std::exception& e ) {
+		qCritical() << "Cannot get the result from the RPC call : " << e.what();
 		error_msg = new QErrorMessage();
 		error_msg->showMessage(e.what());
 		error_msg->exec();
