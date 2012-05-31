@@ -40,8 +40,12 @@ Main_Window::Main_Window(QWidget *parent) :
 	servers_model.setHorizontalHeaderLabels(headers);
 
 	ui->setupUi(this);
+
 	ui->centralWidget->setVisible(false);
 	ui->actionDisconnect->setDisabled(true);
+
+	ui->jobs_view->setModel(&jobs_model);
+	ui->nodes_tree->setModel(&nodes_tree_model);
 }
 
 Main_Window::~Main_Window()
@@ -263,9 +267,15 @@ bool Main_Window::populate_domain_model() {
 	}
 
 	headers << "Node Name" << "Job Name" << "Command Line" << "State" << "Start Time" << "Stop Time" << "Weight";
-
 	jobs_model.clear();
 	jobs_model.setHorizontalHeaderLabels(headers);
+	headers.clear();
+
+	headers << "Nodes";
+	nodes_tree_model.clear();
+	nodes_tree_model.setHorizontalHeaderLabels(headers);
+	headers.clear();
+
 	jobs_row.clear();
 	nodes_row.clear();
 
@@ -288,9 +298,6 @@ bool Main_Window::populate_domain_model() {
 		nodes_tree_model.appendRow(nodes_row);
 		nodes_row.clear();
 	}
-
-	ui->jobs_view->setModel(&jobs_model);
-	ui->nodes_tree->setModel(&nodes_tree_model);
 
 	return true;
 }

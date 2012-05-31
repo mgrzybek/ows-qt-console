@@ -6,110 +6,96 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1184</width>
-    <height>731</height>
+    <width>1060</width>
+    <height>839</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>OWS Qt Console</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QTreeView" name="nodes_tree">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>256</width>
-      <height>671</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QTabWidget" name="tabWidget">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>10</y>
-      <width>881</width>
-      <height>661</height>
-     </rect>
-    </property>
-    <property name="currentIndex">
-     <number>0</number>
-    </property>
-    <widget class="QWidget" name="overview_tab">
-     <attribute name="title">
-      <string>Overview</string>
-     </attribute>
-     <widget class="QTableView" name="jobs_view">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>180</y>
-        <width>851</width>
-        <height>311</height>
-       </rect>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QTreeView" name="nodes_tree">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
       </property>
      </widget>
-     <widget class="QWidget" name="horizontalLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>372</x>
-        <y>510</y>
-        <width>471</width>
-        <height>80</height>
-       </rect>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QPushButton" name="get_nodes_button">
-         <property name="text">
-          <string>Refresh</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="add_node_button">
-         <property name="text">
-          <string>Add node</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="add_job_button">
-         <property name="text">
-          <string>Add job</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QWidget" name="overview_tab">
+       <attribute name="title">
+        <string>Overview</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTableView" name="jobs_view"/>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QPushButton" name="get_nodes_button">
+            <property name="text">
+             <string>Refresh</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="add_node_button">
+            <property name="text">
+             <string>Add node</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="add_job_button">
+            <property name="text">
+             <string>Add job</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="auto_refresh_check">
+          <property name="text">
+           <string>Auto Refresh</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="template_tab">
+       <attribute name="title">
+        <string>Template</string>
+       </attribute>
+      </widget>
      </widget>
-     <widget class="QCheckBox" name="auto_refresh_check">
-      <property name="geometry">
-       <rect>
-        <x>720</x>
-        <y>600</y>
-        <width>111</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Auto Refresh</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="template_tab">
-     <attribute name="title">
-      <string>Template</string>
-     </attribute>
-    </widget>
-   </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1184</width>
+     <width>1060</width>
      <height>22</height>
     </rect>
    </property>
