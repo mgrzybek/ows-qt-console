@@ -31,12 +31,9 @@ TEMPLATE	= app
 
 unix:LIBS += -lthrift \
 	-L/opt/local/lib \
-	-L/opt/local/lib/mysql \
 	-L/opt/local/lib/mysql5/mysql \
 	-L/usr/lib \
-	-L/usr/lib/mysql \
 	-L/usr/local/lib \
-	-L/usr/share/lib \
 	/opt/local/lib/libboost_regex.a \
 	/opt/local/lib/libboost_thread-mt.a \
 	/opt/local/lib/libboost_filesystem.a
