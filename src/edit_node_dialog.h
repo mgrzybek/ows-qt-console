@@ -1,16 +1,16 @@
 /**
- * Project:
- * File name:
- * Description:
+ * Project: ows-qt-console
+ * File name: edit_node_dialog.h
+ * Description: this header describes the node editing dialog window
  *
- * @author Mathieu Grzybek on 20??-??-??
+ * @author Mathieu Grzybek on 2012-06-19
  * @copyright 20?? Mathieu Grzybek. All rights reserved.
  * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
  *
  * @see The GNU Public License (GPL) version 3 or higher
  *
  *
- * ? is free software; you can redistribute it and/or modify
+ * ows-qt-console is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.

@@ -1,7 +1,7 @@
 /**
  * Project: ows-qt-console
  * File name: connect.h
- * Description: describes the connection dialog window
+ * Description: this header describes the connection dialog window
  *
  * @author Mathieu Grzybek on 2012-05-08
  * @copyright 2012 Mathieu Grzybek. All rights reserved.
@@ -10,7 +10,7 @@
  * @see The GNU Public License (GPL) version 3 or higher
  *
  *
- * ? is free software; you can redistribute it and/or modify
+ * ows-qt-console is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.

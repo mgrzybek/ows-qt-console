@@ -10,7 +10,7 @@
  * @see The GNU Public License (GPL) version 3 or higher
  *
  *
- * OWS GUI is free software; you can redistribute it and/or modify
+ * ows-qt-console is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
@@ -236,12 +236,8 @@ void Main_Window::save_settings()
 }
 
 bool Main_Window::populate_domain_model() {
-	rpc::v_nodes	result_nodes; // TODO: thing of putting it into the main_window attributes
+	rpc::v_nodes	result_nodes; // TODO: think of putting it into the main_window attributes
 	QErrorMessage*	error_msg;
-
-	QStringList	headers;
-	QList<QStandardItem*>	jobs_row;
-	QList<QStandardItem*>	nodes_row;
 
 	try {
 		rpc_client->get_handler()->get_nodes(result_nodes, local_node.domain_name, local_node, remote_node);
@@ -266,33 +262,20 @@ bool Main_Window::populate_domain_model() {
 		return false;
 	}
 
-	headers << "Node Name" << "Job Name" << "Command Line" << "State" << "Start Time" << "Stop Time" << "Weight";
-	jobs_model.clear();
-	jobs_model.setHorizontalHeaderLabels(headers);
-	headers.clear();
-
-	headers << "Nodes";
-	nodes_tree_model.clear();
-	nodes_tree_model.setHorizontalHeaderLabels(headers);
-	headers.clear();
-
-	jobs_row.clear();
-	nodes_row.clear();
+	prepare_models();
 
 	qDebug() << "Number of nodes: " << result_nodes.size();
 
-	Q_FOREACH(rpc::t_node n, result_nodes) {
-		Q_FOREACH(rpc::t_job j, n.jobs) {
-			jobs_row << new QStandardItem(j.node_name.c_str());
-			jobs_row << new QStandardItem(j.name.c_str());
-			jobs_row << new QStandardItem(j.cmd_line.c_str());
-			jobs_row << new QStandardItem(j.state);
-			jobs_row << new QStandardItem(j.start_time);
-			jobs_row << new QStandardItem(j.stop_time);
+	populate_nodes_model(result_nodes);
 
-			jobs_model.appendRow(jobs_row);
-			jobs_row.clear();
-		}
+	return true;
+}
+
+bool Main_Window::populate_nodes_model(const rpc::v_nodes& nodes) {
+	QList<QStandardItem*>	nodes_row;
+
+	Q_FOREACH(rpc::t_node n, nodes) {
+		populate_jobs_model(n.jobs);
 
 		nodes_row << new QStandardItem(n.name.c_str());
 		nodes_tree_model.appendRow(nodes_row);
@@ -302,7 +285,115 @@ bool Main_Window::populate_domain_model() {
 	return true;
 }
 
+bool Main_Window::populate_jobs_model(const rpc::v_jobs& jobs) {
+	QList<QStandardItem*>	job_row;
+
+	Q_FOREACH(rpc::t_job j, jobs) {
+		job_row << new QStandardItem(j.node_name.c_str());
+		job_row << new QStandardItem(j.name.c_str());
+		job_row << new QStandardItem(j.cmd_line.c_str());
+		job_row << new QStandardItem(j.state);
+		job_row << new QStandardItem(j.start_time);
+		job_row << new QStandardItem(j.stop_time);
+
+		jobs_model.appendRow(job_row);
+		job_row.clear();
+	}
+	return true;
+}
+
+void Main_Window::prepare_models() {
+	prepare_jobs_model();
+	prepare_nodes_model();
+}
+
+void Main_Window::prepare_jobs_model() {
+	QStringList	headers;
+
+	headers << "Node Name" << "Job Name" << "Command Line" << "State" << "Start Time" << "Stop Time" << "Weight";
+	jobs_model.clear();
+	jobs_model.setHorizontalHeaderLabels(headers);
+	headers.clear();
+}
+
+void Main_Window::prepare_nodes_model() {
+	QStringList	headers;
+
+	headers << "Nodes";
+	nodes_tree_model.clear();
+	nodes_tree_model.setHorizontalHeaderLabels(headers);
+	headers.clear();
+}
+
 void Main_Window::on_get_nodes_button_clicked()
 {
 	populate_domain_model();
+}
+
+void Main_Window::on_nodes_tree_doubleClicked(const QModelIndex &index)
+{
+	rpc::t_node	result_node;
+	rpc::t_node	node_to_get;
+	rpc::v_nodes	nodes;
+	QErrorMessage*	error_msg;
+
+	// Clean the main window
+	//prepare_models();
+	prepare_jobs_model();
+
+	// Get the node's jobs only
+	node_to_get.name = index.data().toString().toStdString().c_str();
+
+	try {
+		rpc_client->get_handler()->get_node(result_node, local_node.domain_name, local_node, remote_node, node_to_get);
+	} catch ( const apache::thrift::transport::TTransportException& e ) {
+		qCritical() << "Cannot get the result from the RPC call : " << e.what();
+
+		error_msg = new QErrorMessage();
+		error_msg->showMessage(e.what());
+		error_msg->exec();
+		delete error_msg;
+
+		on_actionDisconnect_triggered();
+	} catch ( const std::exception& e ) {
+		qCritical() << "Cannot get the result from the RPC call : " << e.what();
+		error_msg = new QErrorMessage();
+		error_msg->showMessage(e.what());
+		error_msg->exec();
+		delete error_msg;
+	}
+
+	// TODO: fix it
+	nodes.push_back(result_node);
+	qDebug() << "node name: " << result_node.name.c_str();
+	//populate_nodes_model(nodes);
+	populate_jobs_model(result_node.jobs);
+}
+
+void Main_Window::on_add_job_button_clicked()
+{
+	rpc::t_job	job;
+	Edit_Job_Dialog*	add_job = new Edit_Job_Dialog(&job, local_node.domain_name.c_str());
+	QErrorMessage*	error_msg;
+
+	if ( add_job->exec() == QDialog::Rejected ) {
+		delete add_job;
+		return;
+	}
+
+	try {
+		rpc_client->get_handler()->add_job(local_node.domain_name, local_node, job);
+	} catch ( const std::exception& e ) {
+		qCritical() << "Cannot get the resul from the RPC call : " << e.what();
+
+		error_msg = new QErrorMessage();
+		error_msg->showMessage(e.what());
+		error_msg->exec();
+		delete error_msg;
+	}
+
+	delete add_job;
+
+	if ( ui->auto_refresh_check->isChecked() == true )
+		populate_domain_model();
 }

@@ -10,7 +10,7 @@
  * @see The GNU Public License (GPL) version 3 or higher
  *
  *
- * OWS GUI is free software; you can redistribute it and/or modify
+ * ows-qt-console is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
@@ -35,6 +35,7 @@
 #include "connect.h"
 #include "domains_manager.h"
 #include "edit_node_dialog.h"
+#include "edit_job_dialog.h"
 
 #include "rpc_client.h"
 
@@ -67,6 +68,10 @@ private slots:
 	void	on_add_node_button_clicked();
 	void	on_get_nodes_button_clicked();
 
+	void	on_nodes_tree_doubleClicked(const QModelIndex &index);
+
+	void on_add_job_button_clicked();
+
 private:
 	/*
 	 * Windows
@@ -97,6 +102,15 @@ private:
 	 * RPC methods
 	 */
 	bool	populate_domain_model();
+	bool	populate_nodes_model(const rpc::v_nodes& nodes);
+	bool	populate_jobs_model(const rpc::v_jobs& jobs);
+
+	/*
+	 * Models
+	 */
+	void	prepare_models();
+	void	prepare_jobs_model();
+	void	prepare_nodes_model();
 };
 
 #endif // MAIN_WINDOW_H
