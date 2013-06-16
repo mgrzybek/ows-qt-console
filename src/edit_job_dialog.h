@@ -28,7 +28,11 @@
 #ifndef EDIT_JOB_DIALOG_H
 #define EDIT_JOB_DIALOG_H
 
+#include <QTreeWidgetItem>
+#include <QStandardItemModel>
+#include <QDateTime>
 #include <QDialog>
+#include <QDebug>
 
 #include "rpc_client.h"
 
@@ -41,16 +45,34 @@ class Edit_Job_Dialog : public QDialog
 	Q_OBJECT
 
 public:
-	explicit Edit_Job_Dialog(rpc::t_job* j, const char* domain_name, QWidget* parent = 0);
+	explicit Edit_Job_Dialog(QStandardItemModel* jobs, QStandardItemModel* nodes, rpc::t_job* j, const char* domain_name, QWidget* parent = 0);
 	~Edit_Job_Dialog();
 
 protected:
 	void changeEvent(QEvent* e);
 
+private slots:
+	void on_Name_Edit_textChanged(const QString &arg1);
+	void on_Cmd_Line_Edit_textChanged(const QString &arg1);
+	void on_Node_List_clicked(const QModelIndex &index);
+
+	void on_Time_Window_Radio_clicked();
+	void on_At_Radio_clicked();
+	void on_None_Radio_clicked();
+
+	void on_Control_Buttons_accepted();
+
 private:
 	Ui::Edit_Job_Dialog*	ui;
+	bool			edit_mode;
 
 	rpc::t_job*	job;
+
+	QStandardItemModel*	jobs_model;
+	QStandardItemModel*	nodes_model;
+
+	void activate_control_buttons();
+	void fill_in_job_data();
 };
 
 #endif // EDIT_JOB_DIALOG_H

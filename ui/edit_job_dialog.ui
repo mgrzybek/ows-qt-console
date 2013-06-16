@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>505</height>
+    <width>858</width>
+    <height>440</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,71 +19,131 @@
      <property name="currentIndex">
       <number>1</number>
      </property>
-     <widget class="QWidget" name="Info_Tab">
+     <widget class="QWidget" name="Properties_Tab">
       <attribute name="title">
-       <string>Info</string>
+       <string>Properties</string>
       </attribute>
-      <widget class="QWidget" name="formLayoutWidget">
-       <property name="geometry">
-        <rect>
-         <x>60</x>
-         <y>50</y>
-         <width>251</width>
-         <height>231</height>
-        </rect>
-       </property>
-       <layout class="QFormLayout" name="formLayout">
-        <item row="0" column="0">
-         <widget class="QLabel" name="Name_Label">
-          <property name="text">
-           <string>Name</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="Node_Label">
-          <property name="text">
-           <string>Node</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="Domain_Label">
-          <property name="text">
-           <string>Domain</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="Command_Line_Label">
-          <property name="text">
-           <string>Command Line</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="Weight_Label">
-          <property name="text">
-           <string>Weight</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <layout class="QFormLayout" name="formLayout">
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="Name_Label">
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="Name_Edit"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="Node_Label">
+           <property name="text">
+            <string>Node</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="Domain_Label">
+           <property name="text">
+            <string>Domain</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="Domain_Edit"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="Command_Line_Label">
+           <property name="text">
+            <string>Command Line</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="Cmd_Line_Edit"/>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="Weight_Label">
+           <property name="text">
+            <string>Weight</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QSpinBox" name="Weight_Spin">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QListView" name="Node_List">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="Previous_Next_Jobs">
       <attribute name="title">
        <string>Previous and Next Jobs</string>
       </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QTreeView" name="Previou_Jobs_Tree"/>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="Previous_Jobs_Label">
+         <property name="text">
+          <string>Previous Jobs</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
        </item>
-       <item>
-        <widget class="QTreeView" name="Available_Jobs_Tree"/>
+       <item row="0" column="1">
+        <widget class="QLabel" name="Availal_Jobs_Label">
+         <property name="text">
+          <string>Available Jobs</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
        </item>
-       <item>
-        <widget class="QTreeView" name="Next_Jobs_Tree"/>
+       <item row="0" column="2">
+        <widget class="QLabel" name="Next_Jobs_Label">
+         <property name="text">
+          <string>Next Jobs</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QListView" name="Available_Jobs_Tree">
+         <property name="dragEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="dragDropMode">
+          <enum>QAbstractItemView::DragDrop</enum>
+         </property>
+         <property name="defaultDropAction">
+          <enum>Qt::LinkAction</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QListView" name="Previous_Jobs_Tree"/>
+       </item>
+       <item row="1" column="2">
+        <widget class="QListView" name="Next_Jobs_Tree"/>
        </item>
       </layout>
      </widget>
@@ -91,16 +151,90 @@
       <attribute name="title">
        <string>Time Constraints</string>
       </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <layout class="QFormLayout" name="formLayout_2">
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+         </property>
+         <property name="labelAlignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+         <item row="1" column="0">
+          <widget class="QRadioButton" name="None_Radio">
+           <property name="text">
+            <string>None</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QRadioButton" name="At_Radio">
+           <property name="text">
+            <string>At</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="At_Line"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QRadioButton" name="Time_Window_Radio">
+           <property name="text">
+            <string>Time Window</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="After_Check">
+             <property name="text">
+              <string>After</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="Before_Check">
+             <property name="text">
+              <string>Before</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="After_Line">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="Before_Line">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
+    <widget class="QDialogButtonBox" name="Control_Buttons">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
+      <set>QDialogButtonBox::Save</set>
      </property>
     </widget>
    </item>
@@ -109,7 +243,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>Control_Buttons</sender>
    <signal>accepted()</signal>
    <receiver>Edit_Job_Dialog</receiver>
    <slot>accept()</slot>
@@ -125,7 +259,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>Control_Buttons</sender>
    <signal>rejected()</signal>
    <receiver>Edit_Job_Dialog</receiver>
    <slot>reject()</slot>

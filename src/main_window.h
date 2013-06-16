@@ -31,7 +31,10 @@
 #include <QMainWindow>
 #include <QSettings>
 #include <QErrorMessage>
+#include <QTreeWidgetItem>
+#include <QDateTime>
 
+#include "convertions.h"
 #include "connect.h"
 #include "domains_manager.h"
 #include "edit_node_dialog.h"
@@ -54,10 +57,11 @@ public:
 	~Main_Window();
 
 	QStandardItemModel	servers_model;
-	QStandardItemModel	jobs_model;
-	QStandardItemModel	nodes_tree_model;
+	QStandardItemModel	template_jobs_model;
+	QStandardItemModel	current_jobs_model;
+	QStandardItemModel	nodes_model;
 
-	bool	rpc_connect(const QString& hostname, const int& port, const QString& username, const QString& password);
+//	bool	rpc_connect(const QString& hostname, const int& port, const QString& username, const QString& password);
 
 private slots:
 	void	on_actionManage_triggered();
@@ -65,14 +69,19 @@ private slots:
 	void	on_actionConnect_triggered();
 	void	on_actionDisconnect_triggered();
 
-	void	on_add_node_button_clicked();
-	void	on_get_nodes_button_clicked();
-
 	void	on_nodes_tree_doubleClicked(const QModelIndex &index);
 
-	void on_add_job_button_clicked();
+	void	on_add_template_job_button_clicked();
 
-private:
+	void	on_add_current_job_button_clicked();
+
+	void	on_add_template_node_button_clicked();
+
+	void	on_get_current_nodes_button_clicked();
+
+	void	on_get_template_nodes_button_clicked();
+
+	private:
 	/*
 	 * Windows
 	 */
@@ -94,6 +103,7 @@ private:
 	Rpc_Client*	rpc_client;
 	rpc::t_node	local_node;
 	rpc::t_node	remote_node;
+	std::string	current_planning_name;
 
 	void	load_settings();
 	void	save_settings();
@@ -101,9 +111,9 @@ private:
 	/*
 	 * RPC methods
 	 */
-	bool	populate_domain_model();
-	bool	populate_nodes_model(const rpc::v_nodes& nodes);
-	bool	populate_jobs_model(const rpc::v_jobs& jobs);
+	bool	populate_domain_models();
+	void	insert_nodes_model(const rpc::t_node& n);
+	bool	populate_jobs_models(const rpc::v_jobs* template_jobs, const rpc::v_jobs* current_jobs);
 
 	/*
 	 * Models

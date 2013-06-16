@@ -28,6 +28,41 @@
 #include "main_window.h"
 #include "ui_main_window.h"
 
+// TODO: think of using a function instead of a macro to be able to return the result of the RPC command
+#define RPC_EXEC(command) \
+	try { \
+		command; \
+	} catch ( const apache::thrift::transport::TTransportException& e ) { \
+		QErrorMessage* error_msg; \
+	\
+		qCritical() << "Connection failed : " << e.what(); \
+	\
+		error_msg = new QErrorMessage(); \
+		error_msg->showMessage(e.what()); \
+		error_msg->exec(); \
+		delete error_msg; \
+	\
+		on_actionDisconnect_triggered(); \
+	} catch ( const apache::thrift::TException& e ) { \
+		QErrorMessage* error_msg; \
+	\
+		qCritical() << "Cannot get the result from the RPC call : " << e.what(); \
+	\
+		error_msg = new QErrorMessage(); \
+		error_msg->showMessage(e.what()); \
+		error_msg->exec(); \
+		delete error_msg; \
+	\
+	} catch ( const std::exception& e ) { \
+		QErrorMessage* error_msg; \
+	\
+		qCritical() << "Cannot get the result from the RPC call : " << e.what(); \
+		error_msg = new QErrorMessage(); \
+		error_msg->showMessage(e.what()); \
+		error_msg->exec(); \
+		delete error_msg; \
+	}
+
 Main_Window::Main_Window(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::Main_Window)
@@ -35,6 +70,7 @@ Main_Window::Main_Window(QWidget *parent) :
 	QStringList	headers;
 
 	load_settings();
+	current_planning_name.clear();
 
 	headers << "Domain Name" << "Hostname" << "Port" << "Username" << "Password";
 	servers_model.setHorizontalHeaderLabels(headers);
@@ -44,36 +80,27 @@ Main_Window::Main_Window(QWidget *parent) :
 	ui->centralWidget->setVisible(false);
 	ui->actionDisconnect->setDisabled(true);
 
-	ui->jobs_view->setModel(&jobs_model);
-	ui->nodes_tree->setModel(&nodes_tree_model);
+	ui->current_jobs_view->setModel(&current_jobs_model);
+	ui->template_jobs_view->setModel(&template_jobs_model);
+//	ui->nodes_list->setModel(&nodes_model);
+	ui->auto_refresh_current_check->setChecked(true);
+	ui->auto_refresh_template_check->setChecked(true);
 }
 
 Main_Window::~Main_Window()
 {
 	delete ui;
-}
 
-bool Main_Window::rpc_connect(const QString& hostname, const int& port, const QString& username, const QString& password) {
-	if ( rpc_client == NULL )
-		rpc_client = new Rpc_Client();
-	else
-		rpc_client->close();
-
-	if ( rpc_client->open(hostname.toStdString().c_str(), port) == false ) {
-		qDebug() << "Connection failed";
-		rpc_client->close();
+	if ( rpc_client != NULL ) {
 		delete rpc_client;
-		return false;
+		rpc_client = NULL;
 	}
-
-	rpc_client->close();
-	delete rpc_client;
-	return true;
 }
 
 void Main_Window::on_actionManage_triggered()
 {
 	dm_dialog = new Domains_Manager(&servers_model);
+
 	if ( dm_dialog->exec() == QDialog::Accepted) {
 		qDebug() << "dm_dialog -> Accepted";
 		save_settings();
@@ -81,6 +108,7 @@ void Main_Window::on_actionManage_triggered()
 		qDebug() << "dm_dialog -> Rejected";
 		load_settings();
 	}
+
 	delete dm_dialog;
 }
 
@@ -110,10 +138,13 @@ void Main_Window::on_actionConnect_triggered()
 		remote_node.domain_name = domain_name.toStdString();
 		remote_node.name = hostname.toStdString();
 
-		rpc_client = new Rpc_Client();
+		if ( rpc_client == NULL )
+			rpc_client = new Rpc_Client();
 
 		if ( rpc_client->open(hostname.toStdString().c_str(), port) == true ) {
-			if ( populate_domain_model() == true ) {
+			rpc_client->get_handler()->get_current_planning_name(current_planning_name, local_node.domain_name, local_node, remote_node);
+
+			if ( populate_domain_models() == true ) {
 				ui->actionConnect->setEnabled(false);
 				ui->actionDisconnect->setEnabled(true);
 				ui->centralWidget->setVisible(true);
@@ -136,34 +167,8 @@ void Main_Window::on_actionDisconnect_triggered() {
 	ui->centralWidget->setVisible(false);
 	ui->actionConnect->setEnabled(true);
 	ui->actionDisconnect->setEnabled(false);
-}
 
-void Main_Window::on_add_node_button_clicked()
-{
-	rpc::t_node	node;
-	Edit_Node_Dialog*	add_node = new Edit_Node_Dialog(&node, local_node.domain_name.c_str());
-	QErrorMessage*	error_msg;
-
-	if ( add_node->exec() == QDialog::Rejected ) {
-		delete add_node;
-		return;
-	}
-
-	try {
-		rpc_client->get_handler()->add_node(local_node.domain_name, local_node, remote_node, node);
-	} catch ( const std::exception& e ) {
-		qCritical() << "Cannot get the resul from the RPC call : " << e.what();
-
-		error_msg = new QErrorMessage();
-		error_msg->showMessage(e.what());
-		error_msg->exec();
-		delete error_msg;
-	}
-
-	delete add_node;
-
-	if ( ui->auto_refresh_check->isChecked() == true )
-		populate_domain_model();
+	prepare_models();
 }
 
 void Main_Window::load_settings()
@@ -235,74 +240,112 @@ void Main_Window::save_settings()
 	settings.endGroup();
 }
 
-bool Main_Window::populate_domain_model() {
-	rpc::v_nodes	result_nodes; // TODO: think of putting it into the main_window attributes
-	QErrorMessage*	error_msg;
+bool Main_Window::populate_domain_models() {
+	rpc::v_nodes	result_template_nodes; // TODO: think of putting it into the main_window attributes
+	rpc::v_nodes	result_running_nodes;
 
-	try {
-		rpc_client->get_handler()->get_nodes(result_nodes, local_node.domain_name, local_node, remote_node);
-	} catch ( const apache::thrift::transport::TTransportException& e ) {
-		qCritical() << "Cannot get the result from the RPC call : " << e.what();
-
-		error_msg = new QErrorMessage();
-		error_msg->showMessage(e.what());
-		error_msg->exec();
-		delete error_msg;
-
-		on_actionDisconnect_triggered();
-
-		return false;
-	} catch ( const std::exception& e ) {
-		qCritical() << "Cannot get the result from the RPC call : " << e.what();
-		error_msg = new QErrorMessage();
-		error_msg->showMessage(e.what());
-		error_msg->exec();
-		delete error_msg;
-
+	if ( current_planning_name.size() == 0 ) {
+		qCritical() << "The current planning name is empty";
 		return false;
 	}
+
+	RPC_EXEC(rpc_client->get_handler()->get_current_planning_name(current_planning_name, local_node.domain_name, local_node, remote_node));
+	RPC_EXEC(rpc_client->get_handler()->get_nodes(result_template_nodes, local_node.domain_name, local_node, remote_node))
+	RPC_EXEC(rpc_client->get_handler()->get_nodes(result_running_nodes, current_planning_name, local_node, remote_node))
 
 	prepare_models();
 
-	qDebug() << "Number of nodes: " << result_nodes.size();
+	qDebug() << "Number of nodes (template): " << result_template_nodes.size();
+	qDebug() << "Number of nodes (running): " << result_running_nodes.size();
 
-	populate_nodes_model(result_nodes);
+	for ( ulong i = 0 ; i < result_template_nodes.size() ; i ++ ) {
+		insert_nodes_model(result_template_nodes.at(i));
 
-	return true;
-}
-
-bool Main_Window::populate_nodes_model(const rpc::v_nodes& nodes) {
-	QList<QStandardItem*>	nodes_row;
-
-	Q_FOREACH(rpc::t_node n, nodes) {
-		populate_jobs_model(n.jobs);
-
-		nodes_row << new QStandardItem(n.name.c_str());
-		nodes_tree_model.appendRow(nodes_row);
-		nodes_row.clear();
+		if ( result_running_nodes.size() > 0 )
+			populate_jobs_models(&result_template_nodes.at(i).jobs, &result_running_nodes.at(i).jobs);
+		else
+			populate_jobs_models(&result_template_nodes.at(i).jobs, NULL);
 	}
 
 	return true;
 }
 
-bool Main_Window::populate_jobs_model(const rpc::v_jobs& jobs) {
+void Main_Window::insert_nodes_model(const rpc::t_node& n) {
+	QList<QStandardItem*>	node_row;
+
+	node_row << new QStandardItem(n.name.c_str());
+	nodes_model.appendRow(node_row);
+
+	node_row.clear();
+}
+
+bool Main_Window::populate_jobs_models(const rpc::v_jobs* template_jobs, const rpc::v_jobs* current_jobs) {
 	QList<QStandardItem*>	job_row;
+	ulong	max_index = 0;
 
-	Q_FOREACH(rpc::t_job j, jobs) {
-		job_row << new QStandardItem(j.node_name.c_str());
-		job_row << new QStandardItem(j.name.c_str());
-		job_row << new QStandardItem(j.cmd_line.c_str());
-		job_row << new QStandardItem(j.state);
-		job_row << new QStandardItem(j.start_time);
-		job_row << new QStandardItem(j.stop_time);
-
-		jobs_model.appendRow(job_row);
-		job_row.clear();
+	if ( current_jobs == NULL )
+		max_index = template_jobs->size();
+	else {
+		if ( template_jobs->size() > current_jobs->size() )
+			max_index = template_jobs->size();
+		else
+			max_index = current_jobs->size();
 	}
+
+	for ( ulong i = 0 ; i < max_index ; i++ ) {
+
+		if ( i < template_jobs->size() ) {
+			const rpc::t_job&	j = template_jobs->at(i);
+
+			job_row << new QStandardItem(j.node_name.c_str());
+			job_row << new QStandardItem(j.name.c_str());
+			job_row << new QStandardItem(j.cmd_line.c_str());
+			job_row << new QStandardItem(build_string_from_job_state(j.state).c_str());
+
+			if ( j.state == rpc::e_job_state::WAITING) {
+				job_row << new QStandardItem("-");
+				job_row << new QStandardItem("-");
+			} else {
+				// TODO: change the way the dates are printed
+				job_row << new QStandardItem(QDateTime::fromTime_t(j.start_time).toString());
+				job_row << new QStandardItem(QDateTime::fromTime_t(j.stop_time).toString());
+			}
+
+			job_row << new QStandardItem(QString::number(j.weight));
+
+			template_jobs_model.appendRow(job_row);
+			job_row.clear();
+		}
+
+		if ( current_jobs != NULL && i < current_jobs->size() ) {
+			const rpc::t_job&	j = current_jobs->at(i);
+
+			job_row << new QStandardItem(j.node_name.c_str());
+			job_row << new QStandardItem(j.name.c_str());
+			job_row << new QStandardItem(j.cmd_line.c_str());
+			job_row << new QStandardItem(build_string_from_job_state(j.state).c_str());
+
+			if ( j.state == rpc::e_job_state::WAITING) {
+				job_row << new QStandardItem("-");
+				job_row << new QStandardItem("-");
+			} else {
+				// TODO: change the way the dates are printed
+				job_row << new QStandardItem(QDateTime::fromTime_t(j.start_time).toString());
+				job_row << new QStandardItem(QDateTime::fromTime_t(j.stop_time).toString());
+			}
+
+			job_row << new QStandardItem(QString::number(j.weight));
+
+			current_jobs_model.appendRow(job_row);
+			job_row.clear();
+		}
+	}
+
 	return true;
 }
 
 void Main_Window::prepare_models() {
+	ui->current_planning_label->setText(current_planning_name.c_str());
 	prepare_jobs_model();
 	prepare_nodes_model();
 }
@@ -311,8 +354,13 @@ void Main_Window::prepare_jobs_model() {
 	QStringList	headers;
 
 	headers << "Node Name" << "Job Name" << "Command Line" << "State" << "Start Time" << "Stop Time" << "Weight";
-	jobs_model.clear();
-	jobs_model.setHorizontalHeaderLabels(headers);
+
+	current_jobs_model.clear();
+	template_jobs_model.clear();
+
+	current_jobs_model.setHorizontalHeaderLabels(headers);
+	template_jobs_model.setHorizontalHeaderLabels(headers);
+
 	headers.clear();
 }
 
@@ -320,80 +368,121 @@ void Main_Window::prepare_nodes_model() {
 	QStringList	headers;
 
 	headers << "Nodes";
-	nodes_tree_model.clear();
-	nodes_tree_model.setHorizontalHeaderLabels(headers);
+	nodes_model.clear();
+	nodes_model.setHorizontalHeaderLabels(headers);
 	headers.clear();
 }
 
-void Main_Window::on_get_nodes_button_clicked()
+void Main_Window::on_nodes_tree_doubleClicked(const QModelIndex& index)
 {
-	populate_domain_model();
+	/*
+	 * Have we clicked on a node or a job?
+	 * - its parent is valid -> this is a job
+	 */
+	if ( index.parent().isValid() == false ) {
+		rpc::t_node	template_result_node;
+		rpc::t_node	current_result_node;
+		rpc::t_node	node_to_get;
+
+		// Clean the main window
+		prepare_jobs_model();
+
+		// Get the node's jobs only
+		node_to_get.name = index.data().toString().toStdString().c_str();
+
+		RPC_EXEC(rpc_client->get_handler()->get_node(template_result_node, local_node.domain_name, local_node, remote_node, node_to_get))
+		RPC_EXEC(rpc_client->get_handler()->get_node(current_result_node, current_planning_name, local_node, remote_node, node_to_get))
+
+		// TODO: fix it
+		qDebug() << "node name: " << node_to_get.name.c_str();
+		populate_jobs_models(&template_result_node.jobs, &current_result_node.jobs);
+
+	} else {
+/*
+		rpc::t_job	job;
+
+		job.node_name = jobs_model.item(index.row(), 0)->text().toStdString().c_str();
+		job.name = jobs_model.item(index.row(), 1)->text().toStdString().c_str();
+
+		RPC_EXEC(rpc_client->get_handler()->get_job(job, local_node.domain_name, local_node, remote_node, job))
+
+		Edit_Job_Dialog*	edit_job = new Edit_Job_Dialog(&jobs_model, &nodes_tree, &nodes_model, &job, local_node.domain_name.c_str());
+
+		if ( edit_job->exec() == QDialog::Rejected ) {
+			delete edit_job;
+			return;
+		}
+
+		delete edit_job;
+
+		RPC_EXEC(rpc_client->get_handler()->update_job(local_node.domain_name, local_node, job))
+
+		if ( ui->auto_refresh_check->isChecked() == true )
+			populate_domain_model();
+*/
+	}
 }
 
-void Main_Window::on_nodes_tree_doubleClicked(const QModelIndex &index)
+void Main_Window::on_add_template_node_button_clicked()
 {
-	rpc::t_node	result_node;
-	rpc::t_node	node_to_get;
-	rpc::v_nodes	nodes;
-	QErrorMessage*	error_msg;
+	rpc::t_node	node;
+	Edit_Node_Dialog*	add_node = new Edit_Node_Dialog(&node, local_node.domain_name.c_str());
 
-	// Clean the main window
-	//prepare_models();
-	prepare_jobs_model();
-
-	// Get the node's jobs only
-	node_to_get.name = index.data().toString().toStdString().c_str();
-
-	try {
-		rpc_client->get_handler()->get_node(result_node, local_node.domain_name, local_node, remote_node, node_to_get);
-	} catch ( const apache::thrift::transport::TTransportException& e ) {
-		qCritical() << "Cannot get the result from the RPC call : " << e.what();
-
-		error_msg = new QErrorMessage();
-		error_msg->showMessage(e.what());
-		error_msg->exec();
-		delete error_msg;
-
-		on_actionDisconnect_triggered();
-	} catch ( const std::exception& e ) {
-		qCritical() << "Cannot get the result from the RPC call : " << e.what();
-		error_msg = new QErrorMessage();
-		error_msg->showMessage(e.what());
-		error_msg->exec();
-		delete error_msg;
+	if ( add_node->exec() == QDialog::Rejected ) {
+		delete add_node;
+		return;
 	}
 
-	// TODO: fix it
-	nodes.push_back(result_node);
-	qDebug() << "node name: " << result_node.name.c_str();
-	//populate_nodes_model(nodes);
-	populate_jobs_model(result_node.jobs);
+	RPC_EXEC(rpc_client->get_handler()->add_node(local_node.domain_name, local_node, remote_node, node))
+
+	if ( ui->auto_refresh_template_check->isChecked() == true )
+		populate_domain_models();
+
+	delete add_node;
 }
 
-void Main_Window::on_add_job_button_clicked()
+void Main_Window::on_add_template_job_button_clicked()
 {
 	rpc::t_job	job;
-	Edit_Job_Dialog*	add_job = new Edit_Job_Dialog(&job, local_node.domain_name.c_str());
-	QErrorMessage*	error_msg;
+	Edit_Job_Dialog*	add_job = new Edit_Job_Dialog(&template_jobs_model, &nodes_model, &job, local_node.domain_name.c_str());
 
 	if ( add_job->exec() == QDialog::Rejected ) {
 		delete add_job;
 		return;
 	}
 
-	try {
-		rpc_client->get_handler()->add_job(local_node.domain_name, local_node, job);
-	} catch ( const std::exception& e ) {
-		qCritical() << "Cannot get the resul from the RPC call : " << e.what();
+	RPC_EXEC(rpc_client->get_handler()->add_job(local_node.domain_name, local_node, job))
 
-		error_msg = new QErrorMessage();
-		error_msg->showMessage(e.what());
-		error_msg->exec();
-		delete error_msg;
-	}
+	if ( ui->auto_refresh_template_check->isChecked() == true )
+		populate_domain_models();
 
 	delete add_job;
+}
 
-	if ( ui->auto_refresh_check->isChecked() == true )
-		populate_domain_model();
+void Main_Window::on_add_current_job_button_clicked()
+{
+	rpc::t_job	job;
+	Edit_Job_Dialog*	add_job = new Edit_Job_Dialog(&current_jobs_model, &nodes_model, &job, current_planning_name.c_str());
+
+	if ( add_job->exec() == QDialog::Rejected ) {
+		delete add_job;
+		return;
+	}
+
+	RPC_EXEC(rpc_client->get_handler()->add_job(current_planning_name, local_node, job))
+
+	if ( ui->auto_refresh_current_check->isChecked() == true )
+		populate_domain_models();
+
+	delete add_job;
+}
+
+void Main_Window::on_get_current_nodes_button_clicked()
+{
+	populate_domain_models();
+}
+
+void Main_Window::on_get_template_nodes_button_clicked()
+{
+	populate_domain_models();
 }
