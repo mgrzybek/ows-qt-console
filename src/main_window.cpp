@@ -69,6 +69,7 @@ Main_Window::Main_Window(QWidget *parent) :
 {
 	QStringList	headers;
 
+
 	load_settings();
 	current_planning_name.clear();
 
@@ -116,9 +117,7 @@ void Main_Window::on_actionConnect_triggered()
 {
 	int	selected_row;
 	int	port;
-	QString	domain_name;
 	QString	username;
-	QString	hostname;
 	QString	password;
 
 	connect_dialog = new Connect(&selected_row, &servers_model);
@@ -126,23 +125,20 @@ void Main_Window::on_actionConnect_triggered()
 	if ( connect_dialog->exec() == QDialog::Accepted ) {
 		qDebug() << "connect_dialog -> Accepted";
 
-		domain_name = servers_model.item(selected_row, 0)->text();
-		hostname = servers_model.item(selected_row, 1)->text();
+		routing.target_node.domain_name = servers_model.item(selected_row, 0)->text().toStdString();
+		routing.target_node.name = servers_model.item(selected_row, 1)->text().toStdString();
+		routing.calling_node.domain_name = servers_model.item(selected_row, 0)->text().toStdString();
+		routing.calling_node.name = "ows_gui";
+
 		port = servers_model.item(selected_row, 2)->text().toInt();
 		username = servers_model.item(selected_row, 3)->text();
 		password = servers_model.item(selected_row, 4)->text();
 
-		local_node.domain_name = domain_name.toStdString();
-		local_node.name = "ows_gui";
-
-		remote_node.domain_name = domain_name.toStdString();
-		remote_node.name = hostname.toStdString();
-
 		if ( rpc_client == NULL )
 			rpc_client = new Rpc_Client();
 
-		if ( rpc_client->open(hostname.toStdString().c_str(), port) == true ) {
-			rpc_client->get_handler()->get_current_planning_name(current_planning_name, local_node.domain_name, local_node, remote_node);
+		if ( rpc_client->open(routing.target_node.name.c_str(), port) == true ) {
+			rpc_client->get_handler()->get_current_planning_name(current_planning_name, routing);
 
 			if ( populate_domain_models() == true ) {
 				ui->actionConnect->setEnabled(false);
@@ -249,9 +245,9 @@ bool Main_Window::populate_domain_models() {
 		return false;
 	}
 
-	RPC_EXEC(rpc_client->get_handler()->get_current_planning_name(current_planning_name, local_node.domain_name, local_node, remote_node));
-	RPC_EXEC(rpc_client->get_handler()->get_nodes(result_template_nodes, local_node.domain_name, local_node, remote_node))
-	RPC_EXEC(rpc_client->get_handler()->get_nodes(result_running_nodes, current_planning_name, local_node, remote_node))
+	RPC_EXEC(rpc_client->get_handler()->get_current_planning_name(current_planning_name, routing));
+	RPC_EXEC(rpc_client->get_handler()->get_nodes(result_template_nodes, routing))
+	RPC_EXEC(rpc_client->get_handler()->get_nodes(result_running_nodes, routing))
 
 	prepare_models();
 
@@ -390,8 +386,8 @@ void Main_Window::on_nodes_tree_doubleClicked(const QModelIndex& index)
 		// Get the node's jobs only
 		node_to_get.name = index.data().toString().toStdString().c_str();
 
-		RPC_EXEC(rpc_client->get_handler()->get_node(template_result_node, local_node.domain_name, local_node, remote_node, node_to_get))
-		RPC_EXEC(rpc_client->get_handler()->get_node(current_result_node, current_planning_name, local_node, remote_node, node_to_get))
+		RPC_EXEC(rpc_client->get_handler()->get_node(template_result_node, routing, node_to_get))
+		RPC_EXEC(rpc_client->get_handler()->get_node(current_result_node, routing, node_to_get))
 
 		// TODO: fix it
 		qDebug() << "node name: " << node_to_get.name.c_str();
@@ -404,9 +400,9 @@ void Main_Window::on_nodes_tree_doubleClicked(const QModelIndex& index)
 		job.node_name = jobs_model.item(index.row(), 0)->text().toStdString().c_str();
 		job.name = jobs_model.item(index.row(), 1)->text().toStdString().c_str();
 
-		RPC_EXEC(rpc_client->get_handler()->get_job(job, local_node.domain_name, local_node, remote_node, job))
+		RPC_EXEC(rpc_client->get_handler()->get_job(job, routing, job))
 
-		Edit_Job_Dialog*	edit_job = new Edit_Job_Dialog(&jobs_model, &nodes_tree, &nodes_model, &job, local_node.domain_name.c_str());
+		Edit_Job_Dialog*	edit_job = new Edit_Job_Dialog(&jobs_model, &nodes_tree, &nodes_model, &job, routing.calling_node.domain_name.c_str());
 
 		if ( edit_job->exec() == QDialog::Rejected ) {
 			delete edit_job;
@@ -415,7 +411,7 @@ void Main_Window::on_nodes_tree_doubleClicked(const QModelIndex& index)
 
 		delete edit_job;
 
-		RPC_EXEC(rpc_client->get_handler()->update_job(local_node.domain_name, local_node, job))
+		RPC_EXEC(rpc_client->get_handler()->update_job(routing.calling_node.domain_name, local_node, job))
 
 		if ( ui->auto_refresh_check->isChecked() == true )
 			populate_domain_model();
@@ -426,14 +422,14 @@ void Main_Window::on_nodes_tree_doubleClicked(const QModelIndex& index)
 void Main_Window::on_add_template_node_button_clicked()
 {
 	rpc::t_node	node;
-	Edit_Node_Dialog*	add_node = new Edit_Node_Dialog(&node, local_node.domain_name.c_str());
+	Edit_Node_Dialog*	add_node = new Edit_Node_Dialog(&node, routing.calling_node.domain_name.c_str());
 
 	if ( add_node->exec() == QDialog::Rejected ) {
 		delete add_node;
 		return;
 	}
 
-	RPC_EXEC(rpc_client->get_handler()->add_node(local_node.domain_name, local_node, remote_node, node))
+	RPC_EXEC(rpc_client->get_handler()->add_node(routing, node))
 
 	if ( ui->auto_refresh_template_check->isChecked() == true )
 		populate_domain_models();
@@ -444,14 +440,14 @@ void Main_Window::on_add_template_node_button_clicked()
 void Main_Window::on_add_template_job_button_clicked()
 {
 	rpc::t_job	job;
-	Edit_Job_Dialog*	add_job = new Edit_Job_Dialog(&template_jobs_model, &nodes_model, &job, local_node.domain_name.c_str());
+	Edit_Job_Dialog*	add_job = new Edit_Job_Dialog(&template_jobs_model, &nodes_model, &job, routing.calling_node.domain_name.c_str());
 
 	if ( add_job->exec() == QDialog::Rejected ) {
 		delete add_job;
 		return;
 	}
 
-	RPC_EXEC(rpc_client->get_handler()->add_job(local_node.domain_name, local_node, job))
+	RPC_EXEC(rpc_client->get_handler()->add_job(routing, job))
 
 	if ( ui->auto_refresh_template_check->isChecked() == true )
 		populate_domain_models();
@@ -469,7 +465,7 @@ void Main_Window::on_add_current_job_button_clicked()
 		return;
 	}
 
-	RPC_EXEC(rpc_client->get_handler()->add_job(current_planning_name, local_node, job))
+	RPC_EXEC(rpc_client->get_handler()->add_job(routing, job))
 
 	if ( ui->auto_refresh_current_check->isChecked() == true )
 		populate_domain_models();

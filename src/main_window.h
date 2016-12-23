@@ -100,10 +100,11 @@ private slots:
 	/*
 	 * RPC objects
 	 */
-	Rpc_Client*	rpc_client;
-	rpc::t_node	local_node;
-	rpc::t_node	remote_node;
-	std::string	current_planning_name;
+	Rpc_Client*				rpc_client;
+	rpc::t_node				local_node;
+	rpc::t_node				remote_node;
+	rpc::t_routing_data    	routing;
+	std::string				current_planning_name;
 
 	void	load_settings();
 	void	save_settings();
