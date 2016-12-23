@@ -1,6 +1,8 @@
 Makefile
 .DS_Store
+*.stash
 *.user
+*.user.*
 *.o
 moc*
 ui_*
